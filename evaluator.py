@@ -33,20 +33,20 @@ class Evaluator:
         plt.close()
         
         imbalance_ratio = counts.max() / counts.min()
-        print(f"⚖️ [Evaluator] Razão de desbalanceamento: {imbalance_ratio:.2f}x")
+        print(f"[Evaluator] Razão de desbalanceamento: {imbalance_ratio:.2f}x")
 
     def evaluate(self):
-        print("🔍 [Evaluator] Carregando o melhor modelo salvo...")
+        print("[Evaluator] Carregando o melhor modelo salvo...")
         try:
-            self.model.load_state_dict(torch.load(Config.ARTIFACTS_DIR / "model_best.pth", weights_only=True))
+            self.model.load_state_dict(torch.load(Config.ARTIFACTS_DIR / "model_best.pth", weights_only=False))
         except FileNotFoundError:
-            print("⚠️ [Evaluator] model_best.pth não encontrado. Usando os pesos atuais do modelo.")
+            print("[Evaluator] model_best.pth não encontrado. Usando os pesos atuais do modelo.")
             
         self.model.eval()
         
         all_preds, all_labels = [], []
         
-        print("▶️ [Evaluator] Iniciando avaliação do conjunto de validação...")
+        print("[Evaluator] Iniciando avaliação do conjunto de validação...")
         with torch.no_grad():
             for i, (images, labels) in enumerate(self.loader):
                 outputs = self.model(images.to(self.device))
@@ -57,7 +57,7 @@ class Evaluator:
                     print(f"   [Avaliação] Processado batch {i+1}/{len(self.loader)}")
                 
         print("\n" + "="*40)
-        print("📊 RELATÓRIO DE CLASSIFICAÇÃO")
+        print("RELATÓRIO DE CLASSIFICAÇÃO")
         print("="*40)
         print(classification_report(all_labels, all_preds, target_names=self.classes))
         
@@ -67,7 +67,7 @@ class Evaluator:
         self._plot_confusion_matrix(all_labels, all_preds)
 
     def _plot_confusion_matrix(self, all_labels, all_preds):
-        print("📉 [Evaluator] Gerando Matriz de Confusão...")
+        print("[Evaluator] Gerando Matriz de Confusão...")
         cm = confusion_matrix(all_labels, all_preds)
         plt.figure(figsize=(8, 6))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=self.classes, yticklabels=self.classes)

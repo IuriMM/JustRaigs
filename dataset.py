@@ -54,7 +54,7 @@ class DataManager:
             if eye_id in image_path_map:
                 self.samples.append((str(image_path_map[eye_id]), self.class_to_idx[row['Final Label']]))
 
-        print(f"✅ [DataManager] Amostras válidas para treinamento/validação: {len(self.samples)}")
+        print(f"[DataManager] Amostras válidas para treinamento/validação: {len(self.samples)}")
 
     def prepare_loaders(self):
         train_transform = transforms.Compose([

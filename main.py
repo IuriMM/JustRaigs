@@ -1,7 +1,8 @@
-import argparse
 import torch
 import numpy as np
 import warnings
+import questionary
+import sys
 
 # Módulos customizados
 from config import Config
@@ -30,19 +31,32 @@ def setup_environment():
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         device_name = str(device)
         
-    print(f"🚀 Usando dispositivo: {device_name}")
+    print(f"Usando dispositivo: {device_name}")
     return device
 
 def main():
-    parser = argparse.ArgumentParser(description="JustRaigs Glaucoma Classification Modules")
-    parser.add_argument('--mode', type=str, default='all', choices=['train', 'eval', 'analyze', 'all'],
-                        help="Modo de execução: 'train' (só treinar), 'eval' (só avaliar), 'analyze' (visualizar classes) ou 'all' (tudo).")
-    args = parser.parse_args()
-
-    print(f"\n====================================")
-    print(f" Executando JustRaigs em modo: {args.mode.upper()}")
-    print(f"====================================\n")
-
+    choice = questionary.select(
+        "Selecione o modo de execução:",
+        choices=[
+            "All (tudo - padrão)",
+            "Train (só treinar)",
+            "Eval (só avaliar)",
+            "Analyze (visualizar classes)"
+        ]
+    ).ask()
+    
+    if choice is None:
+        print("Execução cancelada.")
+        sys.exit(0)
+        
+    mode_map = {
+        "Train (só treinar)": "train",
+        "Eval (só avaliar)": "eval",
+        "Analyze (visualizar classes)": "analyze",
+        "All (tudo - padrão)": "all"
+    }
+    
+    mode = mode_map[choice]
     device = setup_environment()
     
     # 1. Preparação de Dados
@@ -55,11 +69,11 @@ def main():
     model = g_model.get_model()
 
     # 3. Execução Baseada no Argumento
-    if args.mode in ['analyze', 'all']:
+    if mode in ['analyze', 'all']:
         evaluator = Evaluator(model, val_loader, data_manager.classes, data_manager.idx_to_class, device)
         evaluator.visualize_class_distribution(data_manager.samples)
         
-    if args.mode in ['train', 'all']:
+    if mode in ['train', 'all']:
         trainer = Trainer(
             model=model, 
             train_loader=train_loader, 
@@ -71,7 +85,7 @@ def main():
         )
         trainer.train()
 
-    if args.mode in ['eval', 'all']:
+    if mode in ['eval', 'all']:
         evaluator = Evaluator(model, val_loader, data_manager.classes, data_manager.idx_to_class, device)
         evaluator.evaluate()
 
