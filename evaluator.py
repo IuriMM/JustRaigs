@@ -16,7 +16,7 @@ class Evaluator:
         self.device = device
 
     def visualize_class_distribution(self, samples):
-        print("📊 [Evaluator] Gerando visualização da distribuição de classes...")
+        print("[Evaluator] Gerando visualização da distribuição de classes...")
         counts = pd.Series([s[1] for s in samples]).value_counts().sort_index()
         class_names = [self.idx_to_class[i] for i in counts.index]
         

@@ -8,7 +8,7 @@ class GlaucomaModel:
         self.model = self._build_model()
 
     def _build_model(self):
-        print("⚙️ [GlaucomaModel] Inicializando modelo EfficientNet_V2_S...")
+        print("[GlaucomaModel] Inicializando modelo EfficientNet_V2_S...")
         model = models.efficientnet_v2_s(weights=models.EfficientNet_V2_S_Weights.DEFAULT)
 
         for param in model.features.parameters():
@@ -21,7 +21,7 @@ class GlaucomaModel:
         )
 
         model = model.to(self.device)
-        print("✅ [GlaucomaModel] Modelo criado e movido para o dispositivo.")
+        print("[GlaucomaModel] Modelo criado e movido para o dispositivo.")
         return model
         
     def get_model(self):

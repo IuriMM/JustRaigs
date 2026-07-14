@@ -11,7 +11,7 @@ class Trainer:
         self.val_loader = val_loader
         self.device = device
         
-        print("⚙️ [Trainer] Configurando Loss Function e Optimizer...")
+        print("[Trainer] Configurando Loss Function e Optimizer...")
         train_labels = torch.tensor([s[1] for s in train_samples])
         class_counts = torch.bincount(train_labels, minlength=num_classes).float()
         weights = class_counts.sum() / (num_classes * class_counts)
@@ -94,21 +94,21 @@ class Trainer:
                 best_val_loss = val_loss
                 torch.save(self.model.state_dict(), Config.ARTIFACTS_DIR / "model_best.pth")
                 patience_counter = 0
-                print("   🏆 [Trainer] Melhor modelo salvo!")
+                print("[Trainer] Melhor modelo salvo!")
             else:
                 patience_counter += 1
                 if patience_counter >= Config.PATIENCE:
-                    print(f"   🛑 [Trainer] Early Stopping acionado na época {epoch}")
+                    print(f"[Trainer] Early Stopping acionado na época {epoch}")
                     break
             
             self.scheduler.step(val_loss)
 
         self._plot_history(history)
-        print("🏁 [Trainer] Treinamento Finalizado!")
+        print("[Trainer] Treinamento Finalizado!")
         return history
 
     def _plot_history(self, history):
-        print("📈 [Trainer] Gerando gráfico de histórico de treinamento...")
+        print("[Trainer] Gerando gráfico de histórico de treinamento...")
         plt.figure(figsize=(12, 5))
         plt.subplot(1, 2, 1)
         plt.plot(history['train_loss'], label='Train')

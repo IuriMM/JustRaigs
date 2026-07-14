@@ -33,17 +33,17 @@ class DataManager:
         self.val_samples = []
 
     def load_data(self):
-        print("🔍 [DataManager] Mapeando imagens...")
+        print("[DataManager] Mapeando imagens...")
         image_path_map = {}
         for root, _, files in os.walk(Config.DATA_DIR):
             for f in files:
                 if f.endswith(".JPG"):
                     image_path_map[f.replace(".JPG", "")] = Path(root) / f
 
-        print(f"✅ [DataManager] Encontradas {len(image_path_map)} imagens.")
+        print(f"[DataManager] Encontradas {len(image_path_map)} imagens.")
 
         df = pd.read_csv(Config.LABELS_CSV, sep=";")
-        print(f"✅ [DataManager] CSV carregado: {len(df)} registros.")
+        print(f"[DataManager] CSV carregado: {len(df)} registros.")
 
         self.classes = sorted(df['Final Label'].unique())
         self.class_to_idx = {cls: i for i, cls in enumerate(self.classes)}
@@ -84,6 +84,6 @@ class DataManager:
         train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, shuffle=True, num_workers=num_workers, pin_memory=True)
         val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=num_workers, pin_memory=True)
 
-        print(f"📊 [DataManager] Treino: {len(train_dataset)} amostras | Validação: {len(val_dataset)} amostras")
+        print(f"[DataManager] Treino: {len(train_dataset)} amostras | Validação: {len(val_dataset)} amostras")
         
         return train_loader, val_loader
