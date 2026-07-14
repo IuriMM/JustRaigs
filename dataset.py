@@ -80,8 +80,18 @@ class DataManager:
         train_dataset = GlaucomaDataset(self.train_samples, transform=train_transform)
         val_dataset = GlaucomaDataset(self.val_samples, transform=val_transform)
 
+        # Calculando pesos para o WeightedRandomSampler
+        train_labels = [s[1] for s in self.train_samples]
+        import numpy as np
+        class_counts = np.bincount(train_labels)
+        class_weights = 1.0 / class_counts
+        sample_weights = [class_weights[label] for label in train_labels]
+        
+        from torch.utils.data import WeightedRandomSampler
+        sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(self.train_samples), replacement=True)
+
         num_workers = 0
-        train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, shuffle=True, num_workers=num_workers, pin_memory=True)
+        train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, sampler=sampler, num_workers=num_workers, pin_memory=True)
         val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=num_workers, pin_memory=True)
 
         print(f"[DataManager] Treino: {len(train_dataset)} amostras | Validação: {len(val_dataset)} amostras")

@@ -22,8 +22,23 @@ def setup_environment():
     try:
         import torch_directml
         if torch_directml.is_available():
-            device = torch_directml.device()
-            device_name = f"DirectML ({device})"
+            num_devices = torch_directml.device_count()
+            if num_devices > 1:
+                choices = [f"{i}: {torch_directml.device_name(i)}" for i in range(num_devices)]
+                choice = questionary.select(
+                    "Múltiplas GPUs detectadas. Selecione qual usar:",
+                    choices=choices
+                ).ask()
+                
+                if choice is None:
+                    sys.exit(0)
+                    
+                selected_idx = int(choice.split(":")[0])
+                device = torch_directml.device(selected_idx)
+                device_name = f"DirectML ({device} - {torch_directml.device_name(selected_idx)})"
+            else:
+                device = torch_directml.device(0)
+                device_name = f"DirectML ({device} - {torch_directml.device_name(0)})"
         else:
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             device_name = str(device)
@@ -72,8 +87,34 @@ def main():
     if mode in ['analyze', 'all']:
         evaluator = Evaluator(model, val_loader, data_manager.classes, data_manager.idx_to_class, device)
         evaluator.visualize_class_distribution(data_manager.samples)
-        
+                
     if mode in ['train', 'all']:
+        epochs_input = questionary.text(
+            "Quantas épocas deseja treinar?",
+            default=str(Config.EPOCHS)
+        ).ask()
+        
+        if epochs_input is None:
+            sys.exit(0)
+            
+        try:
+            epochs = int(epochs_input)
+        except ValueError:
+            epochs = Config.EPOCHS
+            
+        resume = False
+        checkpoint_path = Config.ARTIFACTS_DIR / "checkpoint.pth"
+        if checkpoint_path.exists():
+            resume_choice = questionary.select(
+                "Checkpoint encontrado! Deseja continuar o treino anterior ou começar do zero?",
+                choices=["Continuar treino", "Começar do zero"]
+            ).ask()
+            
+            if resume_choice is None:
+                sys.exit(0)
+            
+            resume = (resume_choice == "Continuar treino")
+            
         trainer = Trainer(
             model=model, 
             train_loader=train_loader, 
@@ -81,7 +122,9 @@ def main():
             device=device,
             train_samples=data_manager.train_samples,
             num_classes=len(data_manager.classes),
-            idx_to_class=data_manager.idx_to_class
+            idx_to_class=data_manager.idx_to_class,
+            resume=resume,
+            epochs=epochs
         )
         trainer.train()
 
